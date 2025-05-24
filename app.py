@@ -2,37 +2,40 @@
 from flask import Flask, request, send_file
 from flask_cors import CORS
 import subprocess
-import os
-import uuid
 import shutil
+import os
 
 app = Flask(__name__)
 CORS(app)
+
+DOWNLOADS_DIR = "downloads"
 
 @app.route('/download', methods=['POST'])
 def download():
     data = request.get_json()
     url = data['url']
-    
-    # Use yt-dlp to download audio
-    subprocess.run([
-        'yt-dlp', '-x', '--audio-format', 'mp3',
-        '-o', 'downloads/%(title)s.%(ext)s',
-        url
-    ])
 
-    # Zip the folder
-    shutil.make_archive('playlist', 'zip', 'downloads')
+    # Clean up previous downloads
+    if os.path.exists(DOWNLOADS_DIR):
+        shutil.rmtree(DOWNLOADS_DIR)
+    os.makedirs(DOWNLOADS_DIR, exist_ok=True)
 
-    # Send the zip file back to the frontend
-    return send_file('playlist.zip', as_attachment=True)
+    try:
+        # Use yt-dlp to download audio
+        subprocess.run([
+            'yt-dlp', '-x', '--audio-format', 'mp3',
+            '-o', f'{DOWNLOADS_DIR}/%(title)s.%(ext)s',
+            url
+        ], check=True)
+
+        # Zip the folder
+        shutil.make_archive('playlist', 'zip', DOWNLOADS_DIR)
+
+        # Send the zip file back to the frontend
+        return send_file('playlist.zip', as_attachment=True)
 
     except subprocess.CalledProcessError:
-        return {"error": "Download failed"}, 500
-    finally:
-        shutil.rmtree(output_folder, ignore_errors=True)
-import os
+        return {"error": "Failed to download playlist"}, 500
 
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=10000)
