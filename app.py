@@ -9,28 +9,23 @@ import shutil
 app = Flask(__name__)
 CORS(app)
 
-@app.route("/download", methods=["POST"])
+@app.route('/download', methods=['POST'])
 def download():
     data = request.get_json()
-    url = data.get("url")
-    if not url:
-        return {"error": "No URL provided"}, 400
+    url = data['url']
+    
+    # Use yt-dlp to download audio
+    subprocess.run([
+        'yt-dlp', '-x', '--audio-format', 'mp3',
+        '-o', 'downloads/%(title)s.%(ext)s',
+        url
+    ])
 
-    download_id = str(uuid.uuid4())
-    output_folder = f"/tmp/{download_id}"
-    os.makedirs(output_folder, exist_ok=True)
+    # Zip the folder
+    shutil.make_archive('playlist', 'zip', 'downloads')
 
-    try:
-        # Download using yt-dlp
-        subprocess.run([
-            "yt-dlp", "--extract-audio", "--audio-format", "mp3", "-o",
-            f"{output_folder}/%(title)s.%(ext)s", url
-        ], check=True)
-
-        # Zip the folder
-        zip_path = f"/tmp/{download_id}.zip"
-        shutil.make_archive(f"/tmp/{download_id}", 'zip', output_folder)
-        return send_file(zip_path, as_attachment=True)
+    # Send the zip file back to the frontend
+    return send_file('playlist.zip', as_attachment=True)
 
     except subprocess.CalledProcessError:
         return {"error": "Download failed"}, 500
