@@ -31,6 +31,17 @@ def download():
         # Zip the folder
         shutil.make_archive('playlist', 'zip', DOWNLOADS_DIR)
 
+        print("[INFO] Creating zip archive...")
+shutil.make_archive('playlist', 'zip', DOWNLOADS_DIR)
+
+if not os.path.exists('playlist.zip'):
+    print("[ERROR] playlist.zip not found.")
+    return jsonify({"error": "Zip file was not created"}), 500
+
+size = os.path.getsize('playlist.zip')
+print(f"[INFO] Sending zip file, size: {size} bytes")
+return send_file('playlist.zip', as_attachment=True)
+
         # Send the zip file back to the frontend
         return send_file('playlist.zip', as_attachment=True)
 
