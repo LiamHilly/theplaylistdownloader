@@ -32,22 +32,26 @@
     <script>
         function download() {
             const url = document.getElementById('urlInput').value;
-            fetch('https://theplaylistdownloader.onrender.com/download', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ url: url })
-            })
-            .then(response => {
-                if (!response.ok) throw new Error("Download failed.");
-                return response.blob();
-            })
-            .then(blob => {
-                const link = document.createElement('a');
-                link.href = window.URL.createObjectURL(blob);
-                link.download = "playlist.zip";
-                link.click();
-            })
-            .catch(error => alert("Error: " + error.message));
+            fetch('https://your-backend.onrender.com/download', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({ url })
+})
+.then(response => response.blob())
+.then(blob => {
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'playlist.zip';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+})
+.catch(error => {
+  alert('Error: ' + error.message);
+});
         }
     </script>
 </body>
