@@ -34,3 +34,8 @@ def download():
         return {"error": "Download failed"}, 500
     finally:
         shutil.rmtree(output_folder, ignore_errors=True)
+import os
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
