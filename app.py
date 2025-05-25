@@ -6,6 +6,7 @@ import shutil
 import os
 import threading
 import signal
+import time
 
 app = Flask(__name__)
 CORS(app)
@@ -87,12 +88,16 @@ def download():
             yt_dlp_process.wait()
 
             if yt_dlp_process.returncode == 0:
+                time.sleep(1)  # brief delay to ensure file writes are complete
+                mp3_files = [f for f in os.listdir(DOWNLOADS_DIR) if f.endswith(".mp3")]
+                if not mp3_files:
+                    write_status("[ERROR] No MP3 files found after download.")
+                    return
                 write_status("[3/4] Zipping files...")
                 shutil.make_archive('playlist', 'zip', DOWNLOADS_DIR)
                 write_status("[4/4] Download ready.")
             else:
                 write_status("[ERROR] Download was interrupted or failed.")
-
         except Exception as e:
             write_status(f"[ERROR] {str(e)}")
 
