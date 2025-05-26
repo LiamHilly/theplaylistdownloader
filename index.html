@@ -17,7 +17,7 @@
       const url = document.getElementById("url").value;
       document.getElementById("status").textContent = "Status: Starting...";
 
-      await fetch("/download", {
+      await fetch("https://theplaylistdownloader.onrender.com/download", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url })
@@ -27,7 +27,7 @@
     }
 
     async function checkStatus() {
-      const res = await fetch("/status");
+      const res = await fetch("https://theplaylistdownloader.onrender.com/status");
       const data = await res.json();
       document.getElementById("status").textContent = "Status: " + data.status;
       const list = document.getElementById("trackList");
