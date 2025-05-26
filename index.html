@@ -1,45 +1,42 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Playlist Downloader</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SoundCloud Playlist Downloader</title>
 </head>
 <body>
-  <h1>SoundCloud Playlist Downloader</h1>
-  <input type="text" id="url" placeholder="Paste SoundCloud playlist URL here">
+  <h1>Playlist Downloader</h1>
+  <input type="text" id="url" placeholder="Paste SoundCloud playlist URL" />
   <button onclick="startDownload()">Download</button>
-  <p id="status">Status: Idle</p>
-  <ul id="trackList"></ul>
+  <div id="progress"></div>
 
   <script>
+    const backend = "https://theplaylistdownloader.onrender.com";
+
     async function startDownload() {
       const url = document.getElementById("url").value;
-      document.getElementById("status").textContent = "Status: Starting...";
+      document.getElementById("progress").innerText = "Starting download...";
 
-      await fetch("https://theplaylistdownloader.onrender.com/download", {
+      const res = await fetch(`${backend}/download`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url })
       });
 
-      checkStatus();
-    }
-
-    async function checkStatus() {
-      const res = await fetch("https://theplaylistdownloader.onrender.com/status");
       const data = await res.json();
-      document.getElementById("status").textContent = "Status: " + data.status;
-      const list = document.getElementById("trackList");
-      list.innerHTML = "";
-      data.tracks.forEach(track => {
-        const li = document.createElement("li");
-        li.textContent = track;
-        list.appendChild(li);
-      });
+      if (data.success) {
+        document.getElementById("progress").innerText = "Download finished. Preparing zip...";
 
-      if (!data.status.includes("Download ready") && !data.status.includes("ERROR")) {
-        setTimeout(checkStatus, 3000);
+        const fileRes = await fetch(`${backend}/download-file`);
+        const blob = await fileRes.blob();
+        const urlBlob = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = urlBlob;
+        a.download = "playlist.zip";
+        a.click();
+      } else {
+        document.getElementById("progress").innerText = "Download failed.";
       }
     }
   </script>
