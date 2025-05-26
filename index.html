@@ -3,82 +3,44 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Playlist Downloader</title>
-  <style>
-    body { font-family: Arial, sans-serif; text-align: center; padding: 30px; }
-    input, button { margin: 10px; padding: 10px; font-size: 16px; }
-    #progress { width: 100%; background: #ddd; margin: 20px auto; height: 30px; border-radius: 5px; }
-    #bar { height: 100%; width: 0; background: #76c7c0; border-radius: 5px; transition: width 0.3s ease; }
-    #track-list { list-style: none; padding: 0; max-height: 200px; overflow-y: auto; margin-top: 20px; }
-  </style>
 </head>
 <body>
-  <h2>SoundCloud Playlist Downloader</h2>
-  <input type="text" id="url" placeholder="Paste SoundCloud playlist URL" size="50"/>
-  <br>
-  <button onclick="startDownload()">Download Playlist</button>
-  <button onclick="cancelDownload()">Cancel</button>
-  <p id="status">Idle</p>
-  <div id="progress"><div id="bar"></div></div>
-  <ul id="track-list"></ul>
+  <h1>SoundCloud Playlist Downloader</h1>
+  <input type="text" id="url" placeholder="Paste SoundCloud playlist URL here">
+  <button onclick="startDownload()">Download</button>
+  <p id="status">Status: Idle</p>
+  <ul id="trackList"></ul>
 
   <script>
-    let statusInterval;
-
-    function startDownload() {
+    async function startDownload() {
       const url = document.getElementById("url").value;
-      if (!url) return alert("Please enter a URL.");
-      fetch("/download", {
+      document.getElementById("status").textContent = "Status: Starting...";
+
+      await fetch("/download", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url })
       });
-      document.getElementById("status").innerText = "Starting download...";
-      statusInterval = setInterval(updateStatus, 1000);
+
+      checkStatus();
     }
 
-    function cancelDownload() {
-      fetch("/cancel", { method: "POST" });
-      clearInterval(statusInterval);
-    }
+    async function checkStatus() {
+      const res = await fetch("/status");
+      const data = await res.json();
+      document.getElementById("status").textContent = "Status: " + data.status;
+      const list = document.getElementById("trackList");
+      list.innerHTML = "";
+      data.tracks.forEach(track => {
+        const li = document.createElement("li");
+        li.textContent = track;
+        list.appendChild(li);
+      });
 
-    function updateStatus() {
-      fetch("/status")
-        .then(res => res.json())
-        .then(data => {
-          document.getElementById("status").innerText = data.status;
-
-          const trackList = document.getElementById("track-list");
-          trackList.innerHTML = "";
-          data.tracks.forEach(track => {
-            const li = document.createElement("li");
-            li.innerText = track;
-            trackList.appendChild(li);
-          });
-
-          // Simulate progress by percent of 4 steps + track count
-          let progress = 0;
-          if (data.status.includes("1/4")) progress = 10;
-          else if (data.status.includes("2/4")) progress = 30 + data.tracks.length;
-          else if (data.status.includes("3/4")) progress = 90;
-          else if (data.status.includes("4/4")) progress = 100;
-          document.getElementById("bar").style.width = progress + "%";
-
-          if (data.status.includes("Download ready")) {
-            clearInterval(statusInterval);
-            setTimeout(triggerDownload, 500);
-          }
-        });
-    }
-
-    function triggerDownload() {
-      const a = document.createElement('a');
-      a.href = '/download-file';
-      a.download = 'playlist.zip';
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
+      if (!data.status.includes("Download ready") && !data.status.includes("ERROR")) {
+        setTimeout(checkStatus, 3000);
+      }
     }
   </script>
 </body>

@@ -5,8 +5,8 @@ import subprocess
 import shutil
 import os
 import threading
-import signal
 import time
+import signal
 
 app = Flask(__name__)
 CORS(app)
@@ -58,50 +58,49 @@ def download():
     def run_download(url):
         try:
             clear_tracking_files()
-            write_status("[1/4] Cleaning previous downloads...")
+            write_status("Cleaning previous downloads...")
             if os.path.exists(DOWNLOADS_DIR):
                 shutil.rmtree(DOWNLOADS_DIR)
             os.makedirs(DOWNLOADS_DIR, exist_ok=True)
 
-            write_status("[2/4] Downloading tracks...")
+            write_status("Downloading tracks...")
 
             yt_dlp_process = subprocess.Popen([
                 'yt-dlp',
                 '-x', '--audio-format', 'mp3',
                 '-o', f'{DOWNLOADS_DIR}/%(title)s.%(ext)s',
                 '--print', '%(title)s',
-                '--progress-template', 'default',
                 '--newline',
                 url
             ], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
 
             for line in yt_dlp_process.stdout:
-                print(line.strip())
+                print("yt-dlp:", line.strip())
                 if line.startswith('[ExtractAudio] Destination:'):
                     filename = line.strip().split('Destination:')[-1].strip()
                     track_title = os.path.basename(filename)
                     append_track(track_title)
                 elif 'Deleting original file' in line:
                     downloaded = len(open(TRACKS_FILE).readlines())
-                    write_status(f"[2/4] Downloading tracks... ({downloaded})")
+                    write_status(f"Downloading tracks... ({downloaded})")
 
             yt_dlp_process.wait()
 
             if yt_dlp_process.returncode == 0:
-                time.sleep(1)  # brief delay to ensure file writes are complete
                 mp3_files = [f for f in os.listdir(DOWNLOADS_DIR) if f.endswith(".mp3")]
                 if not mp3_files:
-                    write_status("[ERROR] No MP3 files found after download.")
+                    write_status("ERROR: No MP3 files found.")
                     return
-                write_status("[3/4] Zipping files...")
+                write_status("Zipping files...")
                 shutil.make_archive('playlist', 'zip', DOWNLOADS_DIR)
-                write_status("[4/4] Download ready.")
+                write_status("Download ready.")
             else:
-                write_status("[ERROR] Download was interrupted or failed.")
+                write_status("ERROR: yt-dlp failed.")
         except Exception as e:
-            write_status(f"[ERROR] {str(e)}")
+            write_status(f"ERROR: {str(e)}")
 
     data = request.get_json()
+    print("Received download request with data:", data)
     url = data['url']
     write_status("Starting download...")
 
@@ -117,4 +116,4 @@ def download_file():
     return jsonify({"error": "No file found"}), 404
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=10000)
+    app.run(debug=True, host='0.0.0.0', port=10000)
