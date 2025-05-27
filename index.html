@@ -1,32 +1,115 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>BeatPlay - The SoundCloud Playlist Downloader</title>
-    <style>
-        body {
-            background-color: #121212;
-            color: #fff;
-            font-family: Arial, sans-serif;
-            text-align: center;
-            padding: 2em;
-        }
-        img {
-            max-width: 100%;
-            height: auto;
-            border-radius: 12px;
-            margin-bottom: 2em;
-        }
-        h1 {
-            color: #1DB954;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BeatPlay - The SoundCloud Playlist Downloader</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: url('images/ChatGPT%20Image%20May%2027,%202025,%2004_24_11%20PM.png') no-repeat center center fixed;
+      background-size: cover;
+      height: 100vh;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .overlay {
+      background-color: rgba(0, 0, 0, 0.6);
+      padding: 2rem;
+      border-radius: 16px;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+      text-align: center;
+      max-width: 500px;
+      width: 90%;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      font-weight: bold;
+    }
+
+    input {
+      padding: 0.7rem;
+      width: 100%;
+      border-radius: 10px;
+      border: none;
+      margin-bottom: 1rem;
+      font-size: 1rem;
+    }
+
+    button {
+      padding: 0.7rem 2rem;
+      background-color: #00e0ff;
+      border: none;
+      border-radius: 10px;
+      color: black;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #00aacc;
+    }
+
+    footer {
+      position: absolute;
+      bottom: 1rem;
+      width: 100%;
+      text-align: center;
+      font-size: 0.8rem;
+      color: #ccc;
+    }
+  </style>
 </head>
 <body>
-    <img src="/theplaylistdownloader/images/ChatGPT Image May 27, 2025, 04_24_11 PM.png" alt="BeatPlay banner" style="max-width: 100%;">
-    <h1>Welcome to BeatPlay</h1>
-    <p>Download SoundCloud playlists up to 30 tracks directly here.<br>
-    For larger playlists, get the desktop app!</p>
+  <div class="overlay">
+    <h1>BeatPlay - SoundCloud Playlist Downloader</h1>
+    <input type="text" id="playlist-url" placeholder="Paste your SoundCloud playlist URL" />
+    <button onclick="downloadPlaylist()">Download</button>
+    <p id="status"></p>
+  </div>
+
+  <footer>
+    &copy; 2025 BeatPlay by HILLY
+  </footer>
+
+  <script>
+    async function downloadPlaylist() {
+      const url = document.getElementById('playlist-url').value;
+      const status = document.getElementById('status');
+      status.innerText = "Starting download...";
+
+      const response = await fetch("/download", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ url }),
+      });
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const a = document.createElement('a');
+        a.href = window.URL.createObjectURL(blob);
+        a.download = 'playlist.zip';
+        a.click();
+        status.innerText = "Download started!";
+      } else {
+        status.innerText = "Something went wrong!";
+      }
+    }
+  </script>
 </body>
 </html>
