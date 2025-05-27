@@ -1,44 +1,32 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>SoundCloud Playlist Downloader</title>
+    <meta charset="UTF-8">
+    <title>BeatPlay - The SoundCloud Playlist Downloader</title>
+    <style>
+        body {
+            background-color: #121212;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 2em;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 12px;
+            margin-bottom: 2em;
+        }
+        h1 {
+            color: #1DB954;
+        }
+    </style>
 </head>
 <body>
-  <h1>Playlist Downloader</h1>
-  <input type="text" id="url" placeholder="Paste SoundCloud playlist URL" />
-  <button onclick="startDownload()">Download</button>
-  <div id="progress"></div>
-
-  <script>
-    const backend = "https://theplaylistdownloader.onrender.com";
-
-    async function startDownload() {
-      const url = document.getElementById("url").value;
-      document.getElementById("progress").innerText = "Starting download...";
-
-      const res = await fetch(`${backend}/download`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url })
-      });
-
-      const data = await res.json();
-      if (data.success) {
-        document.getElementById("progress").innerText = "Download finished. Preparing zip...";
-
-        const fileRes = await fetch(`${backend}/download-file`);
-        const blob = await fileRes.blob();
-        const urlBlob = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = urlBlob;
-        a.download = "playlist.zip";
-        a.click();
-      } else {
-        document.getElementById("progress").innerText = "Download failed.";
-      }
-    }
-  </script>
+    <img src="images/beatplay_banner.png" alt="BeatPlay - The SoundCloud Playlist Downloader" />
+    <h1>Welcome to BeatPlay</h1>
+    <p>Download SoundCloud playlists up to 30 tracks directly here.<br>
+    For larger playlists, get the desktop app!</p>
 </body>
 </html>
