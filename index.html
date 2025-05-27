@@ -1,113 +1,110 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BeatPlay - The SoundCloud Playlist Downloader</title>
-  <link rel="stylesheet" href="styles.css" />
+  <title>BeatPlay - the SoundCloud Playlist Downloader</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background: url('images/ChatGPT%20Image%20May%2027,%202025,%2004_24_11%20PM.png') no-repeat center center fixed;
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: url('images/beatplay_banner.png') no-repeat center center fixed;
       background-size: cover;
+      position: relative;
       height: 100vh;
-      color: white;
-      display: flex;
-      justify-content: center;
-      align-items: center;
     }
 
     .overlay {
       background-color: rgba(0, 0, 0, 0.6);
-      padding: 2rem;
-      border-radius: 16px;
-      box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
+
+    .container {
+      position: relative;
+      z-index: 2;
+      color: white;
+      padding: 40px;
       text-align: center;
-      max-width: 500px;
-      width: 90%;
     }
 
     h1 {
-      font-size: 2rem;
-      margin-bottom: 1rem;
-      font-weight: bold;
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+    }
+
+    input, button {
+      padding: 10px;
+      font-size: 1rem;
+      margin: 5px;
+      border-radius: 5px;
+      border: none;
     }
 
     input {
-      padding: 0.7rem;
-      width: 100%;
-      border-radius: 10px;
-      border: none;
-      margin-bottom: 1rem;
-      font-size: 1rem;
+      width: 300px;
+      max-width: 90%;
     }
 
     button {
-      padding: 0.7rem 2rem;
-      background-color: #00e0ff;
-      border: none;
-      border-radius: 10px;
-      color: black;
-      font-weight: bold;
+      background-color: #ff5e5e;
+      color: white;
       cursor: pointer;
-      transition: background-color 0.3s ease;
     }
 
     button:hover {
-      background-color: #00aacc;
-    }
-
-    footer {
-      position: absolute;
-      bottom: 1rem;
-      width: 100%;
-      text-align: center;
-      font-size: 0.8rem;
-      color: #ccc;
+      background-color: #ff2a2a;
     }
   </style>
 </head>
 <body>
-  <div class="overlay">
-    <h1>BeatPlay - SoundCloud Playlist Downloader</h1>
-    <input type="text" id="playlist-url" placeholder="Paste your SoundCloud playlist URL" />
-    <button onclick="downloadPlaylist()">Download</button>
+  <div class="overlay"></div>
+  <div class="container">
+    <h1>BeatPlay - the SoundCloud Playlist Downloader</h1>
+    <p>Enter a SoundCloud playlist URL to get started:</p>
+    <input type="text" id="playlist-url" placeholder="Paste SoundCloud playlist URL here" />
+    <br />
+    <button onclick="startDownload()">Download Playlist</button>
     <p id="status"></p>
   </div>
 
-  <footer>
-    &copy; 2025 BeatPlay by HILLY
-  </footer>
-
   <script>
-    async function downloadPlaylist() {
-      const url = document.getElementById('playlist-url').value;
-      const status = document.getElementById('status');
-      status.innerText = "Starting download...";
+    async function startDownload() {
+      const url = document.getElementById("playlist-url").value;
+      const status = document.getElementById("status");
+      if (!url) {
+        status.textContent = "Please enter a valid URL.";
+        return;
+      }
+      status.textContent = "Downloading...";
 
-      const response = await fetch("/download", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ url }),
-      });
+      try {
+        const response = await fetch("/download", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ url })
+        });
 
-      if (response.ok) {
+        if (!response.ok) throw new Error("Download failed.");
+
         const blob = await response.blob();
-        const a = document.createElement('a');
-        a.href = window.URL.createObjectURL(blob);
-        a.download = 'playlist.zip';
+        const downloadUrl = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = downloadUrl;
+        a.download = "playlist.zip";
+        document.body.appendChild(a);
         a.click();
-        status.innerText = "Download started!";
-      } else {
-        status.innerText = "Something went wrong!";
+        a.remove();
+        status.textContent = "Download complete!";
+      } catch (error) {
+        status.textContent = "Error downloading playlist.";
       }
     }
   </script>
