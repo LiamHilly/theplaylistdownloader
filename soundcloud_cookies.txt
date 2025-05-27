@@ -1,1 +1,4 @@
-[{"domain":".soundcloud.com","name":"OptanonAlertBoxClosed","value":"2025-05-18T00:45:06.215Z"}]
+# Netscape HTTP Cookie File
+.soundcloud.com	TRUE	/	TRUE	1779065106	OptanonAlertBoxClosed	2025-05-18T00:45:06.215Z
+soundcloud.com	FALSE	/	TRUE	1758957924	crossfade_modal_viewed	true
+
